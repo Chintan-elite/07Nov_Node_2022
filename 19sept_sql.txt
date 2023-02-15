@@ -1,0 +1,287 @@
+C - create
+R - read
+U - Update
+D - delete
+
+SQL Commands : 
+DDL : data defination lang.
+*****************************
+create 
+alter
+drop
+truncate
+
+CREATE DATABASE 19sept;
+USE 19sept;
+DROP DATABASE 19sept;
+
+table : 
+2 types of constrinas:
+1 : datatype
+int
+varchar
+double
+date
+blob
+
+2 : keys : 
+notnull
+unique
+primary key
+foreign key
+
+
+CREATE TABLE reg(id INT PRIMARY KEY,NAME VARCHAR(20),email VARCHAR(50),pass VARCHAR(20));
+
+ALTER TABLE reg ADD COLUMN phno INT;
+ALTER TABLE reg MODIFY COLUMN phno VARCHAR(20)
+ALTER TABLE  reg DROP COLUMN  phno;
+ALTER TABLE reg RENAME TO registration
+
+TRUNCATE registration;
+
+DROP TABLE registration
+
+************************************************************
+DML : Data manipulation lang.
+*****************************
+insert
+update
+delete
+
+CREATE TABLE emp (id INT PRIMARY KEY AUTO_INCREMENT, NAME VARCHAR(20), email VARCHAR(50), dept VARCHAR(20), sal DOUBLE)
+
+INSERT INTO emp VALUES(0,"Kinjal","kinjal@gmail.com","java",8000)
+INSERT INTO emp(NAME,email) VALUES("Nidhi","nidhi@gmail.com")
+
+UPDATE emp SET dept='Selenium', sal=9000 WHERE id=2
+
+DELETE FROM emp WHERE id=2;
+
+*********************************************************
+DQL : data query lang.
+**********************
+select
+
+SELECT * FROM emp;
+SELECT NAME,email FROM emp
+
+SELECT DISTINCT dept FROM emp;
+SELECT * FROM emp WHERE dept='java'
+SELECT * FROM emp WHERE dept='java' OR dept='testing'
+SELECT * FROM emp WHERE dept='java' AND sal>8000
+
+SELECT * FROM emp WHERE dept IN('java','php','testing')
+SELECT * FROM emp WHERE dept NOT IN('java')
+
+
+SELECT * FROM emp ORDER BY NAME
+SELECT * FROM emp ORDER BY sal DESC
+
+SELECT MAX(sal) FROM emp
+SELECT MIN(sal) FROM emp
+SELECT AVG(sal) FROM emp
+SELECT SUM(sal) FROM emp
+
+SELECT COUNT(*) FROM emp
+
+SELECT COUNT(DISTINCT dept) AS total_dept FROM emp
+
+SELECT * FROM emp LIMIT 1,4
+
+**max**
+SELECT * FROM emp ORDER BY sal DESC LIMIT 0,1
+**min**
+SELECT * FROM emp ORDER BY sal  LIMIT 0,1
+**second max**
+SELECT * FROM emp ORDER BY sal DESC LIMIT 1,1
+
+SELECT * FROM emp WHERE NAME LIKE 'P%'
+SELECT * FROM emp WHERE NAME LIKE '%D'
+SELECT * FROM emp WHERE NAME LIKE '_i%'
+
+
+max sal : 
+SELECT * FROM emp WHERE sal=(SELECT MAX(sal) FROM emp)
+
+sec. max : 
+
+SELECT * FROM emp WHERE sal = 
+(SELECT MAX(sal)FROM emp WHERE sal<(SELECT MAX(sal) FROM emp))
+
+dept. wise max
+SELECT * FROM emp WHERE sal IN
+(SELECT MAX(sal) FROM emp GROUP BY dept)
+
+************************************************************************
+DCL : data control lang.
+**************************
+commit
+rollback
+
+START TRANSACTION;
+DELETE FROM emp WHERE id=5;
+SAVEPOINT a;
+UPDATE emp SET dept="php" WHERE id=6;
+
+ROLLBACK TO a;
+**************************************************************************
+**************************************************************************
+Foreign key : relation between multiple table
+
+CREATE TABLE author(aid INT PRIMARY KEY AUTO_INCREMENT,aname VARCHAR(20))
+
+CREATE TABLE book(bid INT PRIMARY KEY AUTO_INCREMENT, bname VARCHAR(20), price DOUBLE, aid INT, FOREIGN KEY(aid) REFERENCES author(aid))
+
+cross join
+inner join
+--matchin data
+outer join
+right
+left
+full
+
+
+SELECT book.bname, author.aname FROM book JOIN author ON book.aid=author.aid
+
+SELECT b.bname, a.aname FROM book b JOIN author a ON b.aid=a.aid
+
+SELECT b.bname, a.aname FROM book b LEFT JOIN author a ON b.aid=a.aid
+SELECT b.bname, a.aname FROM book b RIGHT JOIN author a ON b.aid=a.aid
+
+SELECT b.bname, a.aname FROM book b LEFT JOIN author a ON b.aid=a.aid UNION
+SELECT b.bname, a.aname FROM book b RIGHT JOIN author a ON b.aid=a.aid
+
+***************************************************************************************
+view : 
+*************
+
+CREATE
+    VIEW `19sept`.`empview` 
+    AS
+(SELECT email,dept FROM  emp);
+
+
+
+CREATE
+    
+    VIEW `19sept`.`cview` 
+    AS
+(SELECT c.cname,s.sname,ct.ctname FROM country c JOIN state s JOIN city ct ON c.cid=s.sid AND s.sid=ct.sid);
+
+**************************************************************************************
+Trigger : 
+***********
+
+DELIMITER $$
+
+CREATE
+   
+    TRIGGER `19sept`.`oldemp` BEFORE DELETE
+    ON `19sept`.emp
+    FOR EACH ROW BEGIN
+	INSERT INTO emp_copy VALUES(old.id,old.name,old.email,old.dept,old.sal);
+    END$$
+
+DELIMITER ;
+
+**************************************************************************************
+Stored procedure
+****************
+DELIMITER $$
+CREATE
+    PROCEDURE `practice`.`allemp`()
+    BEGIN
+	SELECT * FROM emp;
+    END$$
+
+DELIMITER ;
+
+call allemp()
+
+DELIMITER $$
+
+CREATE
+   
+    PROCEDURE `practice`.`empbyid`(IN eid INT)
+    
+    BEGIN
+	SELECT * FROM emp WHERE id = eid;
+    END$$
+
+DELIMITER ;
+
+call empbyid(1)
+
+DELIMITER $$
+
+CREATE
+    /*[DEFINER = { user | CURRENT_USER }]*/
+    PROCEDURE `practice`.`empcount`(OUT total INT)
+   
+    BEGIN
+	SELECT COUNT(*) INTO total FROM emp;
+    END$$
+
+DELIMITER ;
+
+call empcount(@total);
+select @total
+
+DELIMITER $$
+
+CREATE
+    /*[DEFINER = { user | CURRENT_USER }]*/
+    PROCEDURE `practice`.`salbyid`(INOUT val DOUBLE)
+   
+    BEGIN
+	SELECT sal INTO val FROM emp WHERE id=val;
+    END$$
+
+DELIMITER ;
+
+set @val=1
+call salbyid(@val)
+select @val
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
