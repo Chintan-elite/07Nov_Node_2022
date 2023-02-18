@@ -158,6 +158,10 @@ router.get("/changeCartQty", uauth, async (req, resp) => {
         const newqty = Number(cartProduct.qty) + Number(req.query.qty)
         const newtotal = newqty * productdata.price;
 
+        if (newqty < 1 || newqty > productdata.qty) {
+            return;
+        }
+
         const updatedata = await Cart.findByIdAndUpdate(cartid, { qty: newqty, total: newtotal })
         resp.send("ok")
 
@@ -185,10 +189,22 @@ router.get("/payment", (req, resp) => {
 
 })
 
+const nodemailer = require("nodemailer")
+
+var transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
+    auth: {
+        user: 'chintan.tops@gmail.com',
+        pass: 'ogckofyqvjqattcf'
+    }
+});
+
+
 router.get("/order", uauth, async (req, resp) => {
 
     const pid = req.query.pid;
-    console.log(pid);
     const user = req.user
     const cartProduct = await Cart.find({ uid: user._id })
 
@@ -200,7 +216,7 @@ router.get("/order", uauth, async (req, resp) => {
         }
     }
 
-    console.log(prod);
+    //console.log(prod);
 
     try {
         const or = new Order({
@@ -208,8 +224,34 @@ router.get("/order", uauth, async (req, resp) => {
             uid: user._id,
             product: prod
         })
-        await or.save()
-        resp.send("your order confirmed")
+        const orderdata = await or.save()
+
+        var row = "";
+        for (var i = 0; i < prod.length; i++) {
+
+            const product = await Product.findOne({ _id: prod[i].pid })
+            row = row + "<span>" + product.pname + " " + product.price + " " + prod[i].qty + "</span><br>"
+        }
+
+        console.log(row);
+
+        var msg = {
+            from: "chintan.tops@gmail.com",
+            to: user.email,
+            subject: "Order conformation",
+            html: "<h1>Eshop</h1>payment id : <span>" + pid + "</span><br><span>" + orderdata._id + "</span><br><span>" + user.fname + " " + user.lname + "<br>Phno : " + user.phno + "</span><br>" + row
+        }
+
+        transporter.sendMail(msg, (err, success) => {
+            if (err) {
+                console.log(err);
+                return
+            }
+            resp.send("your order confirmed")
+        })
+
+
+
     } catch (error) {
 
     }
